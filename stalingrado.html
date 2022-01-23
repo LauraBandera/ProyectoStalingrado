@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Stalingrado</title>
+    <style>
+        table, tr, td{
+            border: 1px solid black;
+        }
+        td{
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>STALINGRADO</h1>
+    <p id="matriz"></p>
+    <h2 id="ganador"></h2>
+    <script>
+        var battlefield = "";
+        function recupera(){
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState==4 && this.status==200){
+                    let data = JSON.parse(this.responseText)["battlefield"];
+                    mostrar(data, document.getElementById("matriz"));
+                    let ruso = primerR(data);
+                    let continuo = true;
+                    win(winner(data,ruso[0], ruso[1], continuo), document.getElementById("ganador"));
+                }
+            };
+            xmlhttp.open("GET", "stalingrado.php",true);
+            xmlhttp.send();
+        }
+
+        function mostrar(matriz, padre){
+            let table = document.createElement("table");
+            matriz.map(fila =>{
+                let tr = document.createElement("tr");
+                fila.map(elemento => {
+                    let td = document.createElement("td");
+                    if(elemento == ""){
+                        td.innerHTML = " ";
+                    }else{
+                        td.innerHTML = elemento;
+                    }
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            padre.appendChild(table);
+        }
+
+        function primerR(matriz){
+            let i = 0;
+            let j = 0;
+            let array = [];
+            let encontrado = false;
+            do{
+                do{
+                    if(matriz[i][j] == 'R'){
+                        array.push(i);
+                        array.push(j);
+                    }
+                    j++
+                }while(j < matriz[i].length && !encontrado);
+                i++;
+            }while(i < matriz.length && !encontrado);
+            return array;
+        }
+
+        function winner(matriz, fila, columna, sigue){
+            if(matriz[fila][columna] == 'R'){
+                matriz[fila][columna] = " ";
+                if(fila-1 > 0 && matriz[fila-1][columna] == 'R'){
+                   sigue = winner(matriz, fila-1, columna, sigue);
+                }else if(fila+1 < matriz.length && matriz[fila+1][columna] == 'R'){
+                    sigue = winner(matriz, fila+1, columna, sigue);
+                }else if(columna-1 > 0 && matriz[fila][columna-1] == 'R'){
+                    sigue = winner(matriz, fila, columna-1, sigue);
+                }else if(columna+1 < matriz[fila].length && matriz[fila][columna+1] == 'R'){
+                    sigue = winner(matriz, fila, columna+1, sigue);
+                }else if(fila-1 > 0 && fila+1 < matriz.length && columna-1 > 0 && columna+1 < matriz[fila].length ){
+                    sigue = false;
+                }
+            }
+            return sigue;
+        }
+        
+        function win(sigue, padre){
+            if(sigue){
+                padre.innerHTML = "¡GANAN LOS RUSOS!";
+            }else{
+                padre.innerHTML = "¡GANAN LOS ALEMANES!";
+            }
+        }
+
+        recupera();
+    </script>
+</body>
+
+</html>
